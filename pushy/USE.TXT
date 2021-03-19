@@ -1,0 +1,46 @@
+使用APNs服務器進行身份驗證
+APNs客戶機在發送推送通知之前必須通過某種方式向APNs服務器進行身份驗證。
+目前，APNs（和Pushy）支持兩種身份驗證方法：TLS-based身份驗證和token-based身份驗證。
+這兩種方法是mutually-exclusive；您需要為每個客戶機選擇其中一種。
+
+[TLS authentication]
+在TLS-based身份驗證中，客戶端在連接時向服務器提供TLS證書，並且可以向證書中指定的任何「主題」發送通知。通常，這意味著單個客戶端只能向單個接收應用程序發送推送通知。
+一旦你註冊了你的應用程序並獲得了必要的證書，你需要做的第一件事就是創建一個ApnsClient來發送push通知。
+使用TLS身份驗證的客戶機需要一個證書和私鑰來向APNs服務器進行身份驗證。
+存儲證書和密鑰的最常見方法是在password-protectedPKCS#12文件中（如果您在撰寫本文時按照Apple的說明操作，您將得到一個password-protected.p12文件）。
+要創建將使用TLS-based身份驗證的客戶端：
+final ApnsClient apnsClient = new ApnsClientBuilder()
+                              .setApnsServer(ApnsClientBuilder.DEVELOPMENT_APNS_HOST)
+                              .setClientCredentials(new File("/path/to/certificate.p12"), "p12-file-password")
+                              .build();
+
+[Token authentication]
+在token-based身份驗證中，客戶端仍然使用TLS-secured連接連接到服務器，但在連接時不向服務器提供證書。
+相反，客戶機在發送的每個通知中都包含一個cryptographically-signed令牌（不用擔心Pushy會自動為您處理這個問題）。客戶機可以向其擁有有效簽名密鑰的任何「主題」發送推送通知。
+要開始使用token-based客戶機，您需要從Apple獲得簽名密鑰（在某些上下文中也稱為私鑰）。獲得簽名密鑰後，可以創建新客戶端：
+final ApnsClient apnsClient = new ApnsClientBuilder()
+                              .setApnsServer(ApnsClientBuilder.DEVELOPMENT_APNS_HOST)
+                              .setSigningKey(ApnsSigningKey.loadFromPkcs8File(new File("/path/to/key.p8"),
+                              "TEAMID1234", "KEYID67890"))
+                              .build();
+
+發送推送通知
+Pushy的APNs客戶機維護與APNs服務器的內部連接池，並根據需要創建新的連接。因此，不需要顯式啟動客戶機。不管您選擇什麼身份驗證方法，一旦您創建了一個客戶端，它就可以開始發送推送通知了。
+推送通知至少需要一個設備令牌（它標識通知的目標設備，與身份驗證令牌不同），一個主題和一個負載。
+final SimpleApnsPushNotification pushNotification;
+{
+    final ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+    payloadBuilder.setAlertBody("Example!");
+    final String payload = payloadBuilder.build();
+    final String token = TokenUtil.sanitizeTokenString("<efc7492 bdbd8209>");
+    pushNotification = new SimpleApnsPushNotification(token, "com.example.myApp", payload);
+}
+
+測試程式碼
+com.eatthepath.pushy.console.Demo.java
+
+
+
+
+
+                                
