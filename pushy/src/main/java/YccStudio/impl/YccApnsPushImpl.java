@@ -25,7 +25,7 @@ public class YccApnsPushImpl implements IYccApnsPush {
         "unused", "rawtypes"
     })
     @Override
-    public PushNotificationResponse push(File certFile, String certPassword, String topic, String deviceToken, String pushMessage, String pushMessageTitle) {
+    public PushNotificationResponse push(File certFile, String certPassword, String topic, String deviceToken, String pushMessage, String pushMessageTitle, int badgeNumber, String us, String msgId) {
 
         //可參考 deviceToken=TokenUtil.sanitizeTokenString("375c78f0411c3246ffcc85faae33438a080a854ad131ba55df9709fc259020ed");
         //可參考 topic="tw.com.senao.splus2rInhouse";
@@ -54,6 +54,12 @@ public class YccApnsPushImpl implements IYccApnsPush {
             payloadBuilder.setAlertBody(pushMessage);
             if(pushMessageTitle!=null) payloadBuilder.setAlertTitle(pushMessageTitle);
             payloadBuilder.setSound("default");
+            
+            payloadBuilder.setBadgeNumber(badgeNumber);
+            //客製化屬性 us (APP要導頁的屬性)
+            payloadBuilder.addCustomProperty("us", us);
+            //客製化屬性 id (訊息的編號)
+            payloadBuilder.addCustomProperty("id", msgId);
             
             String payload=payloadBuilder.build(); //推播有效載荷JSON
 
@@ -92,13 +98,13 @@ public class YccApnsPushImpl implements IYccApnsPush {
     
     @SuppressWarnings("rawtypes")
     @Override
-    public PushNotificationResponse push(String certFilePath, String certPassword, String topic, String deviceToken, String pushMessage, String pushMessageTitle) {
-        return this.push(new java.io.File(certFilePath), certPassword, topic, deviceToken, pushMessage, pushMessageTitle);
+    public PushNotificationResponse push(String certFilePath, String certPassword, String topic, String deviceToken, String pushMessage, String pushMessageTitle, int badgeNumber, String us, String msgId) {
+        return this.push(new java.io.File(certFilePath), certPassword, topic, deviceToken, pushMessage, pushMessageTitle, badgeNumber, us, msgId);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public java.util.List<PushNotificationResponse> push(File certFile, String certPassword, String topic, String[] deviceTokens, String pushMessage, String pushMessageTitle) {
+    public java.util.List<PushNotificationResponse> push(File certFile, String certPassword, String topic, String[] deviceTokens, String pushMessage, String pushMessageTitle, int badgeNumber, String us, String msgId) {
         
         java.util.ArrayList<PushNotificationResponse> result=new java.util.ArrayList<PushNotificationResponse>();
         ApnsClient apnsClient=null;
@@ -124,6 +130,12 @@ public class YccApnsPushImpl implements IYccApnsPush {
             payloadBuilder.setAlertBody(pushMessage);
             if(pushMessageTitle!=null) payloadBuilder.setAlertTitle(pushMessageTitle);
             payloadBuilder.setSound("default");
+            
+            payloadBuilder.setBadgeNumber(badgeNumber);
+            //客製化屬性 us (APP要導頁的屬性)
+            payloadBuilder.addCustomProperty("us", us);
+            //客製化屬性 id (訊息的編號)
+            payloadBuilder.addCustomProperty("id", msgId);
             
             String payload=payloadBuilder.build(); //推播有效載荷JSON
             
@@ -171,8 +183,8 @@ public class YccApnsPushImpl implements IYccApnsPush {
     }
     
     @SuppressWarnings("rawtypes")
-    public java.util.List<PushNotificationResponse> push(String certFilePath, String certPassword, String topic, String[] deviceTokens, String pushMessage, String pushMessageTitle) {
-        return this.push(new java.io.File(certFilePath), certPassword, topic, deviceTokens, pushMessage, pushMessageTitle);
+    public java.util.List<PushNotificationResponse> push(String certFilePath, String certPassword, String topic, String[] deviceTokens, String pushMessage, String pushMessageTitle, int badgeNumber, String us, String msgId) {
+        return this.push(new java.io.File(certFilePath), certPassword, topic, deviceTokens, pushMessage, pushMessageTitle, badgeNumber, us, msgId);
     }
 
     @SuppressWarnings({
@@ -188,7 +200,7 @@ public class YccApnsPushImpl implements IYccApnsPush {
         
         //單一筆推播測試
         IYccApnsPush demo=new YccApnsPushImpl();
-        demo.push(certFilePath, certPassword, topic, deviceToken, pushMessage, pushMessageTitle);
+        demo.push(certFilePath, certPassword, topic, deviceToken, pushMessage, pushMessageTitle, 1, "", ""+System.currentTimeMillis());
         
         Calendar cal=Calendar.getInstance();
         java.text.NumberFormat nf=java.text.NumberFormat.getInstance();
@@ -201,7 +213,7 @@ public class YccApnsPushImpl implements IYccApnsPush {
         //多筆推播測試
         String deviceToken2="490bc459f2cffcf2d989ed7b784b3cdf9051b14f459976785c830402505460ce";
         String[] deviceTokens= {deviceToken, deviceToken2};
-        //demo.push(certFilePath, certPassword, topic, deviceTokens, pushMessage, pushMessageTitle);
+        //demo.push(certFilePath, certPassword, topic, deviceTokens, pushMessage, pushMessageTitle, 1, "", ""+System.currentTimeMillis());
     }
 
 }
